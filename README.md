@@ -15,7 +15,7 @@
 
 ## 在线体验
 
-🎮 [点击开始游戏](https://snow-man-game.vercel.app)
+🎮 [点击开始游戏](https://wangxiaoer5200.github.io/snow-man/)
 
 ## 技术栈
 
