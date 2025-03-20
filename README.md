@@ -1,5 +1,24 @@
-# Vue 3 + TypeScript + Vite
+# 雪人游戏 (Snow Man)
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+一个有趣的在线游戏
 
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+## 游戏特点
+
+- 🎮 简单易上手的游戏规则
+- 🎨 精美的雪人动画效果
+
+
+## 游戏规则
+
+1.可以左右移动
+2.点击空格发射雪球
+
+## 在线体验
+
+🎮 [点击开始游戏](https://snow-man-game.vercel.app)
+
+## 技术栈
+
+- Vue 3
+- TypeScript
+- Vite
