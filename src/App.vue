@@ -18,6 +18,7 @@ function startGame() {
   gameOver.value = false
   hitCount.value = 0
   gameTime.value = 0
+  currentMessage.value = ''
   gameTimer = window.setInterval(() => {
     gameTime.value++
   }, 1000)
@@ -189,8 +190,8 @@ function handleLauncherClick() {
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
   window.addEventListener('keyup', handleKeyup)
-  window.addEventListener('touchstart', handleTouchStart, { passive: false })
-  window.addEventListener('touchmove', handleTouchMove, { passive: false })
+  window.addEventListener('touchstart', handleTouchStart, { passive: true })
+  window.addEventListener('touchmove', handleTouchMove, { passive: true })
   window.addEventListener('touchend', handleTouchEnd)
   gameLoop = window.setInterval(updateGame, 16)
 })
@@ -299,34 +300,35 @@ onUnmounted(() => {
   position: fixed;
   top: 0;
   left: 0;
+  touch-action: none;
 }
 
 .score {
-  font-size: 32px;
-  margin: 20px 0;
+  font-size: clamp(24px, 5vw, 32px);
+  margin: 10px 0;
   color: #1565c0;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 }
 
 .game-area {
   width: 100vw;
-  height: calc(100vh - 80px);
+  height: calc(100vh - 60px);
   position: relative;
   background: transparent;
   overflow: hidden;
+  touch-action: none;
 }
 
 .snowman {
   position: absolute;
   top: 20px;
-  width: 160px;
-  height: 200px;
+  width: clamp(100px, 30vw, 160px);
+  height: clamp(125px, 37.5vw, 200px);
   transform: translateX(-50%);
   background: url('@/assets/1.png') no-repeat center;
   background-size: contain;
   transition: background-image 0.3s;
 }
-
 .snowman--damaged {
   background-image: url('@/assets/2.png');
 }
@@ -335,121 +337,70 @@ onUnmounted(() => {
   background-image: url('@/assets/3.png');
 }
 
+
 .snowball {
   position: absolute;
-  width: 30px;
-  height: 30px;
+  width: clamp(20px, 5vw, 30px);
+  height: clamp(20px, 5vw, 30px);
   background: white;
   border-radius: 50%;
   transform: translateX(-50%);
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-.particle {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  background: white;
-  border-radius: 50%;
-  transform: translateX(-50%);
-  opacity: 0.8;
-  animation: fade-out 0.5s linear forwards;
-}
-
-@keyframes fade-out {
-  to {
-    opacity: 0;
-    transform: translateX(-50%) scale(0.5);
-  }
-}
-
 .launcher {
   position: absolute;
-  bottom: 40px;
-  width: 120px;
-  height: 60px;
+  bottom: clamp(20px, 5vh, 40px);
+  width: clamp(80px, 20vw, 120px);
+  height: clamp(40px, 10vw, 60px);
   background: url('@/assets/cannon.svg') no-repeat center;
   background-size: contain;
   transform: translateX(-50%) rotate(60deg);
   cursor: pointer;
   transition: transform 0.2s, left 0.1s linear;
   -webkit-tap-highlight-color: transparent;
-}
-
-.game-over {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  padding: 40px;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 16px;
-  text-align: center;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-}
-
-.game-over h2 {
-  color: #1565c0;
-  margin-bottom: 20px;
-}
-
-.game-over p {
-  font-size: 18px;
-  margin: 10px 0;
-  color: #333;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .intro-message {
-  font-size: 24px;
+  font-size: clamp(18px, 4vw, 24px);
   color: #1565c0;
   text-align: center;
-  margin: 20px 0;
+  margin: 20px 10px;
   line-height: 1.6;
   max-width: 600px;
 }
 
 .game-message {
   position: fixed;
-  top: 100px;
+  top: clamp(60px, 15vh, 100px);
   left: 50%;
   transform: translateX(-50%);
   background: rgba(255, 255, 255, 0.9);
-  padding: 15px 30px;
-  border-radius: 30px;
-  font-size: 20px;
+  padding: 12px 20px;
+  border-radius: 20px;
+  font-size: clamp(16px, 3.5vw, 20px);
   color: #1565c0;
   text-align: center;
   animation: fadeIn 0.5s ease-out;
   z-index: 100;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.feedback-section {
-  margin-top: 30px;
-}
-
-.feedback-section h3 {
-  font-size: 22px;
-  color: #1565c0;
-  margin-bottom: 20px;
-}
-
-.feedback-buttons {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
+  max-width: 90vw;
 }
 
 .control-btn {
   background: #1565c0;
   color: white;
   border: none;
-  padding: 12px 24px;
+  padding: clamp(8px, 2vw, 12px) clamp(16px, 4vw, 24px);
   border-radius: 25px;
-  font-size: 18px;
+  font-size: clamp(16px, 3.5vw, 18px);
   cursor: pointer;
   transition: transform 0.2s, background-color 0.2s;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  touch-action: manipulation;
 }
 
 .control-btn:hover {
