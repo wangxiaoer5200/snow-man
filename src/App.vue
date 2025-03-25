@@ -9,8 +9,27 @@ const hitCount = ref(0)
 const gameOver = ref(false)
 const gameStarted = ref(false)
 const gameTime = ref(0)
+const bestTime = ref(localStorage.getItem('bestTime') ? parseInt(localStorage.getItem('bestTime')!) : 0)
 const currentMessage = ref('')
+const messageVisible = ref(false)
 let gameTimer: number
+let messageTimer: number
+
+// 显示消息的函数
+function showMessage(message: string) {
+  currentMessage.value = message
+  messageVisible.value = true
+  
+  // 清除之前的定时器
+  if (messageTimer) {
+    clearTimeout(messageTimer)
+  }
+  
+  // 设置3秒后消失
+  messageTimer = window.setTimeout(() => {
+    messageVisible.value = false
+  }, 3000)
+}
 
 // 游戏控制
 function startGame() {
@@ -45,6 +64,8 @@ const launcherPosition = ref(50) // 百分比位置
 const snowmanPosition = ref(50) // 百分比位置
 const snowmanDirection = ref(1) // 1 向右, -1 向左
 const snowmanSpeed = ref(0.3) // 移动速度
+const directionChangeChance = ref(0.02) // 每帧改变方向的概率
+const speedChangeChance = ref(0.03) // 每帧改变速度的概率
 
 // 雪球状态
 const snowballs = ref<Array<{ x: number; y: number; id: number }>>([])
@@ -58,7 +79,8 @@ const keyState = ref({
   ArrowLeft: false,
   ArrowRight: false,
   Space: false,
-  lastShot: Date.now()
+  lastShot: Date.now(),
+  moveSpeed: 2 // 固定移动速度
 }) as any
 
 // 键盘控制
@@ -90,21 +112,31 @@ function shootSnowball() {
 let gameLoop: number
 
 function updateGame() {
-  // 处理键盘输入
+  // 处理键盘输入和更新发射台位置
   if (keyState.value.ArrowLeft) {
-    launcherPosition.value = Math.max(0, launcherPosition.value - 1)
-  }
+    launcherPosition.value = Math.max(0, launcherPosition.value - 2)
+  } 
   if (keyState.value.ArrowRight) {
-    launcherPosition.value = Math.min(100, launcherPosition.value + 1)
+    launcherPosition.value = Math.min(100, launcherPosition.value + 2)
   }
+
   // 处理空格键发射
   const now = Date.now()
-  if (keyState.value.Space && now - keyState.value.lastShot > 100) { // 降低发射频率限制
+  if (keyState.value.Space && now - keyState.value.lastShot > 100) {
     shootSnowball()
     keyState.value.lastShot = now
   }
 
   // 更新雪人位置
+  // 随机改变方向
+  if (Math.random() < directionChangeChance.value) {
+    snowmanDirection.value = Math.random() < 0.5 ? -1 : 1
+  }
+  // 随机改变速度
+  if (Math.random() < speedChangeChance.value) {
+    snowmanSpeed.value = 0.2 + Math.random() * 0.4 // 速度在0.2到0.6之间随机
+  }
+  // 边界检测和位置更新
   if (snowmanPosition.value <= 0) snowmanDirection.value = 1
   if (snowmanPosition.value >= 100) snowmanDirection.value = -1
   snowmanPosition.value += snowmanSpeed.value * snowmanDirection.value
@@ -148,13 +180,20 @@ function updateGame() {
   })
 
   // 检查游戏状态和更新提示信息
-  if (hitCount.value >= 50 && hitCount.value < 100 && currentMessage.value !== 'Nice shot! Your stress is melting away!') {
-    currentMessage.value = 'Nice shot! Your stress is melting away!'
-  } else if (hitCount.value >= 100 && hitCount.value < 150 && currentMessage.value !== 'Keep going, you\'re letting go!') {
-    currentMessage.value = 'Keep going, you\'re letting go!'
-  } else if (hitCount.value >= 150) {
+  if (hitCount.value >= 100 && hitCount.value < 250 && currentMessage.value !== 'Nice shot! Your stress is melting away!') {
+    showMessage('Nice shot! Your stress is melting away!')
+  } else if (hitCount.value >= 250 && hitCount.value < 500 && currentMessage.value !== 'Keep going, you\'re letting go!') {
+    showMessage('Keep going, you\'re letting go!')
+  } else if (hitCount.value >= 500) {
     gameOver.value = true
-    currentMessage.value = 'Take a deep breath. Feel the calm. You\'ve got this.'
+    // 检查是否为最佳时间
+    if (bestTime.value === 0 || gameTime.value < bestTime.value) {
+      bestTime.value = gameTime.value
+      localStorage.setItem('bestTime', gameTime.value.toString())
+      currentMessage.value = `新纪录！用时 ${Math.floor(gameTime.value / 60)}:${(gameTime.value % 60).toString().padStart(2, '0')}！`
+    } else {
+      currentMessage.value = 'Take a deep breath. Feel the calm. You\'ve got this.'
+    }
     clearInterval(gameTimer)
   }
 }
@@ -212,10 +251,12 @@ onUnmounted(() => {
     <div class="header">
       <div class="score">Score: {{ hitCount }}</div>
       <div class="timer" v-if="gameStarted">Time: {{ Math.floor(gameTime / 60) }}:{{ (gameTime % 60).toString().padStart(2, '0') }}</div>
+      <div class="best-time" v-if="bestTime > 0">Best: {{ Math.floor(bestTime / 60) }}:{{ (bestTime % 60).toString().padStart(2, '0') }}</div>
     </div>
     
     <!-- 游戏控制按钮 -->
     <div class="game-controls" v-if="!gameStarted && !gameOver">
+      <div class="intro-snowman"></div>
       <p class="intro-message">Imagine this snowman is your worries, your stress, or anything bothering you<br>Take a deep breath... and throw snowballs at it! Watch your worries melt away.</p>
       <button class="control-btn" @click="startGame">Start the game</button>
     </div>
@@ -226,8 +267,8 @@ onUnmounted(() => {
       <div 
         class="snowman" 
             :class="{
-          'snowman--damaged': hitCount >= 50,
-          'snowman--broken': hitCount >= 100
+          'snowman--damaged': hitCount >= 100,
+          'snowman--broken': hitCount >= 250
         }"
         :style="{
           left: `${snowmanPosition}%`
@@ -269,6 +310,7 @@ onUnmounted(() => {
     
     <!-- 游戏结束提示 -->
     <div v-if="gameOver" class="game-over">
+      <div class="end-snowman"></div>
       <h2>{{ currentMessage }}</h2>
       <div class="feedback-section">
         <h3>Now, how do you feel?</h3>
@@ -280,7 +322,7 @@ onUnmounted(() => {
     </div>
     
     <!-- 游戏提示信息 -->
-    <div v-if="currentMessage && !gameOver" class="game-message">
+    <div v-if="currentMessage && !gameOver" class="game-message" :class="{ 'fade-out': !messageVisible }">
       {{ currentMessage }}
     </div>
   </div>
@@ -303,11 +345,15 @@ onUnmounted(() => {
   touch-action: none;
 }
 
-.score {
+.score, .best-time {
   font-size: clamp(24px, 5vw, 32px);
   margin: 10px 0;
   color: #1565c0;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.best-time {
+  color: #f57c00;
 }
 
 .game-area {
@@ -322,11 +368,11 @@ onUnmounted(() => {
 .snowman {
   position: absolute;
   top: 20px;
-  width: clamp(100px, 30vw, 160px);
-  height: clamp(125px, 37.5vw, 200px);
+  width: clamp(120px, 35vw, 180px);
+  height: clamp(150px, 43.75vw, 225px);
   transform: translateX(-50%);
   background: url('@/assets/1.png') no-repeat center;
-  background-size: contain;
+  background-size: 150%;
   transition: background-image 0.3s;
 }
 .snowman--damaged {
@@ -388,6 +434,41 @@ onUnmounted(() => {
   z-index: 100;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   max-width: 90vw;
+  opacity: 1;
+  transition: opacity 0.5s ease-out;
+}
+
+.game-message.fade-out {
+  opacity: 0;
+}
+
+.intro-snowman {
+  width: clamp(120px, 35vw, 180px);
+  height: clamp(150px, 43.75vw, 225px);
+  background: url('@/assets/1.png') no-repeat center;
+  background-size: contain;
+  margin: 20px auto;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.end-snowman {
+  width: clamp(120px, 35vw, 180px);
+  height: clamp(150px, 43.75vw, 225px);
+  background: url('@/assets/4.png') no-repeat center;
+  background-size: contain;
+  margin: 20px auto;
+  animation: wave 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes wave {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
 }
 
 .control-btn {
