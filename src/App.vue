@@ -81,8 +81,18 @@ function getShareContent() {
 
 function shareToFacebook() {
   const content = getShareContent()
-  const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(content.url)}&quote=${encodeURIComponent(content.text)}`
-  window.open(shareUrl, '_blank')
+  // 使用Facebook移动端分享API
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+  const shareUrl = isMobile
+    ? `fb://share?text=${encodeURIComponent(content.text)}&href=${encodeURIComponent(content.url)}`
+    : `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(content.url)}&quote=${encodeURIComponent(content.text)}`
+  
+  try {
+    window.open(shareUrl, '_blank')
+  } catch (error) {
+    // 如果无法打开应用或出现错误，回退到网页版
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(content.url)}&quote=${encodeURIComponent(content.text)}`, '_blank')
+  }
 }
 
 function shareToTwitter() {
@@ -253,14 +263,12 @@ const isTouching = ref(false)
 
 // 触摸控制
 function handleTouchStart(event: TouchEvent) {
-  event.preventDefault()
   touchStartX.value = event.touches[0].clientX
   isTouching.value = true
 }
 
 function handleTouchMove(event: TouchEvent) {
   if (!isTouching.value) return
-  event.preventDefault()
   const deltaX = event.touches[0].clientX - touchStartX.value
   touchStartX.value = event.touches[0].clientX
   launcherPosition.value = Math.max(0, Math.min(100, launcherPosition.value + (deltaX / window.innerWidth) * 100))
@@ -554,6 +562,8 @@ onUnmounted(() => {
   background: transparent;
   overflow: hidden;
   touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .snowman {
@@ -565,15 +575,9 @@ onUnmounted(() => {
   background: url('@/assets/1.png') no-repeat center;
   background-size: 160%;
   transition: background-image 0.3s;
+  user-select: none;
+  -webkit-user-select: none;
 }
-.snowman--damaged {
-  background-image: url('@/assets/2.png');
-}
-
-.snowman--broken {
-  background-image: url('@/assets/3.png');
-}
-
 
 .snowball {
   position: absolute;
@@ -584,6 +588,8 @@ onUnmounted(() => {
   transform: translateX(-50%);
   box-shadow: 0 0 15px rgba(255,255,255,0.2);
   animation: pulse 1s infinite;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .launcher {
