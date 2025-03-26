@@ -6,7 +6,7 @@ const hitAudio = ref<HTMLAudioElement | null>(null) as any
 
 // 游戏状态
 const hitCount = ref(0)
-const gameOver = ref(true)
+const gameOver = ref(false)
 const gameStarted = ref(false)
 const gameTime = ref(0)
 const bestTime = ref(localStorage.getItem('bestTime') ? parseInt(localStorage.getItem('bestTime')!) : 0)
