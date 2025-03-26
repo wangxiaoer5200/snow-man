@@ -223,11 +223,11 @@ function updateGame() {
   })
 
   // 检查游戏状态和更新提示信息
-  if (hitCount.value >= 100 && hitCount.value < 250 && currentMessage.value !== 'Nice shot! Your stress is melting away!') {
+  if (hitCount.value >= 50 && hitCount.value < 120 && currentMessage.value !== 'Nice shot! Your stress is melting away!') {
     showMessage('Nice shot! Your stress is melting away!')
-  } else if (hitCount.value >= 250 && hitCount.value < 500 && currentMessage.value !== 'Keep going, you\'re letting go!') {
+  } else if (hitCount.value >= 120 && hitCount.value < 200 && currentMessage.value !== 'Keep going, you\'re letting go!') {
     showMessage('Keep going, you\'re letting go!')
-  } else if (hitCount.value >= 500) {
+  } else if (hitCount.value >= 200) {
     gameOver.value = true
     // 检查是否为最佳时间
     if (bestTime.value === 0 || gameTime.value < bestTime.value) {
@@ -275,15 +275,6 @@ onMounted(() => {
   window.addEventListener('touchend', handleTouchEnd)
   gameLoop = window.setInterval(updateGame, 16)
 
-  // 初始化微信JSSDK
-  // wx.config({
-  //     debug: false,
-  //     appId: '', // 需要填写实际的appId
-  //     timestamp: Math.floor(Date.now() / 1000),
-  //     nonceStr: Math.random().toString(36).substr(2),
-  //     signature: '', // 需要填写实际的签名
-  //     jsApiList: ['updateAppMessageShareData']
-  //   })
 })
 
 onUnmounted(() => {
@@ -576,9 +567,9 @@ onUnmounted(() => {
 
 .launcher {
   position: absolute;
-  bottom: clamp(20px, 5vh, 40px);
-  width: clamp(100px, 25vw, 150px);
-  height: clamp(50px, 12.5vw, 75px); 
+  bottom: clamp(40px, 10vh, 60px);
+  width: clamp(120px, 30vw, 180px);
+  height: clamp(60px, 15vw, 90px); 
   background: url('@/assets/cannon.svg') no-repeat center;
   background-size: contain;
   transform: translateX(-50%) rotate(60deg);
