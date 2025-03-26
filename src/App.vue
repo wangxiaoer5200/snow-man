@@ -54,44 +54,28 @@ function getShareContent() {
   }
 }
 
-// async function shareToWechat() {
-//   if (typeof wx !== 'undefined') {
-//     const content = getShareContent()
-//     try {
-//       await wx.ready()
-//       wx.updateAppMessageShareData({
-//         title: content.title,
-//         desc: content.text,
-//         link: content.url,
-//         imgUrl: window.location.origin + '/src/assets/1.png',
-//         success: () => {
-//           showMessage('分享成功！')
-//         },
-//         fail: () => {
-//           showMessage('分享失败，请重试')
-//         }
-//       })
-//     } catch (error) {
-//       window.open(`https://wechat.com`, '_blank')
-//     }
-//   } else {
-//     window.open(`https://wechat.com`, '_blank')
-//   }
-// }
-
 function shareToFacebook() {
   const content = getShareContent()
-  // 使用Facebook移动端分享API
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-  const shareUrl = isMobile
-    ? `fb://share?text=${encodeURIComponent(content.text)}&href=${encodeURIComponent(content.url)}`
-    : `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(content.url)}&quote=${encodeURIComponent(content.text)}`
+  // 使用Facebook分享API
+  const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(content.url)}&quote=${encodeURIComponent(content.text)}`
   
   try {
-    window.open(shareUrl, '_blank')
+    // 打开新窗口进行分享
+    const width = 550
+    const height = 450
+    const left = (window.screen.width - width) / 2
+    const top = (window.screen.height - height) / 2
+    const features = `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes,resizable=yes,location=no,status=no`
+    
+    const shareWindow = window.open(shareUrl, 'facebook-share-dialog', features)
+    
+    // 检查窗口是否被阻止
+    if (shareWindow === null || typeof shareWindow === 'undefined') {
+      showMessage('请允许弹出窗口以分享到Facebook')
+    }
   } catch (error) {
-    // 如果无法打开应用或出现错误，回退到网页版
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(content.url)}&quote=${encodeURIComponent(content.text)}`, '_blank')
+    console.error('Facebook分享失败:', error)
+    showMessage('分享到Facebook时出现错误，请稍后重试')
   }
 }
 
@@ -316,7 +300,6 @@ onUnmounted(() => {
 <template>
   <div class="game-container">
     <div class="header">
-      <!-- <div class="score">Score: {{ hitCount }}</div> -->
       <div class="score" v-if="gameStarted">Time: {{ Math.floor(gameTime / 60) }}:{{ (gameTime % 60).toString().padStart(2, '0') }}</div>
       <div class="best-time" v-if="bestTime > 0">Best Record: {{ Math.floor(bestTime / 60) }}:{{ (bestTime % 60).toString().padStart(2, '0') }}</div>
     </div>
@@ -389,10 +372,6 @@ onUnmounted(() => {
       <div class="share-section">
         <h3>Share your achievement!</h3>
         <div class="share-buttons">
-          <!-- <button class="share-btn wechat" @click="shareToWechat">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M8.2 13.3c-.5 0-.9-.4-.9-.8s.4-.8.9-.8.9.4.9.8-.4.8-.9.8m4.2-2.4c.5 0 .9.4.9.8s-.4.8-.9.8-.9-.4-.9-.8.4-.8.9-.8m3.7 2.4c-.5 0-.9-.4-.9-.8s.4-.8.9-.8.9.4.9.8-.4.8-.9.8m3.7-2.4c.5 0 .9.4.9.8s-.4.8-.9.8-.9-.4-.9-.8.4-.8.9-.8M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2"/></svg>
-            WeChat
-          </button> -->
           <button class="share-btn facebook" @click="shareToFacebook">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.1c0-6.6-5.4-12-12-12s-12 5.4-12 12c0 6 4.4 11 10.1 11.9v-8.4h-3v-3.5h3v-2.6c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.8v2.2h3.4l-.5 3.5h-2.8v8.4c5.7-.9 10.1-5.9 10.1-11.9"/></svg>
             Facebook
@@ -549,6 +528,9 @@ onUnmounted(() => {
   margin: 10px 0;
   color: #1565c0;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
 }
 
 .best-time {
@@ -634,6 +616,9 @@ onUnmounted(() => {
   max-width: 90vw;
   opacity: 1;
   transition: opacity 0.5s ease-out;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
 }
 
 .game-message.fade-out {
