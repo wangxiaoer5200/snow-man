@@ -6,7 +6,7 @@ const hitAudio = ref<HTMLAudioElement | null>(null) as any
 
 // 游戏状态
 const hitCount = ref(0)
-const gameOver = ref(false)
+const gameOver = ref(true)
 const gameStarted = ref(false)
 const gameTime = ref(0)
 const bestTime = ref(localStorage.getItem('bestTime') ? parseInt(localStorage.getItem('bestTime')!) : 0)
@@ -41,6 +41,54 @@ function startGame() {
   gameTimer = window.setInterval(() => {
     gameTime.value++
   }, 1000)
+}
+
+// 分享功能
+function getShareContent() {
+  const score = hitCount.value
+  const time = `${Math.floor(gameTime.value / 60)}:${(gameTime.value % 60).toString().padStart(2, '0')}`
+  return {
+    title: '雪球压力消除器',
+    text: `我在雪球压力消除器中击中了${score}次雪人，用时${time}！来和我一起玩吧！`,
+    url: window.location.href
+  }
+}
+
+// async function shareToWechat() {
+//   if (typeof wx !== 'undefined') {
+//     const content = getShareContent()
+//     try {
+//       await wx.ready()
+//       wx.updateAppMessageShareData({
+//         title: content.title,
+//         desc: content.text,
+//         link: content.url,
+//         imgUrl: window.location.origin + '/src/assets/1.png',
+//         success: () => {
+//           showMessage('分享成功！')
+//         },
+//         fail: () => {
+//           showMessage('分享失败，请重试')
+//         }
+//       })
+//     } catch (error) {
+//       window.open(`https://wechat.com`, '_blank')
+//     }
+//   } else {
+//     window.open(`https://wechat.com`, '_blank')
+//   }
+// }
+
+function shareToFacebook() {
+  const content = getShareContent()
+  const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(content.url)}&quote=${encodeURIComponent(content.text)}`
+  window.open(shareUrl, '_blank')
+}
+
+function shareToTwitter() {
+  const content = getShareContent()
+  const shareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(content.text)}&url=${encodeURIComponent(content.url)}`
+  window.open(shareUrl, '_blank')
 }
 
 function resetGame(isFinished = false) {
@@ -155,14 +203,15 @@ function updateGame() {
       }
       
       // 创建溅射效果
-      for (let i = 0; i < 8; i++) {
-        const angle = (Math.PI * 2 * i) / 8
+      for (let i = 0; i < 12; i++) {
+        const angle = (Math.PI * 2 * i) / 12
+        const speed = 2 + Math.random() * 2
         particles.value.push({
           x: ball.x,
           y: ball.y,
           id: nextSnowballId++,
-          dx: Math.cos(angle) * 2,
-          dy: Math.sin(angle) * 2
+          dx: Math.cos(angle) * speed,
+          dy: Math.sin(angle) * speed
         })
       }
       return false
@@ -233,6 +282,16 @@ onMounted(() => {
   window.addEventListener('touchmove', handleTouchMove, { passive: true })
   window.addEventListener('touchend', handleTouchEnd)
   gameLoop = window.setInterval(updateGame, 16)
+
+  // 初始化微信JSSDK
+  // wx.config({
+  //     debug: false,
+  //     appId: '', // 需要填写实际的appId
+  //     timestamp: Math.floor(Date.now() / 1000),
+  //     nonceStr: Math.random().toString(36).substr(2),
+  //     signature: '', // 需要填写实际的签名
+  //     jsApiList: ['updateAppMessageShareData']
+  //   })
 })
 
 onUnmounted(() => {
@@ -249,9 +308,9 @@ onUnmounted(() => {
 <template>
   <div class="game-container">
     <div class="header">
-      <div class="score">Score: {{ hitCount }}</div>
-      <div class="timer" v-if="gameStarted">Time: {{ Math.floor(gameTime / 60) }}:{{ (gameTime % 60).toString().padStart(2, '0') }}</div>
-      <div class="best-time" v-if="bestTime > 0">Best: {{ Math.floor(bestTime / 60) }}:{{ (bestTime % 60).toString().padStart(2, '0') }}</div>
+      <!-- <div class="score">Score: {{ hitCount }}</div> -->
+      <div class="score" v-if="gameStarted">Time: {{ Math.floor(gameTime / 60) }}:{{ (gameTime % 60).toString().padStart(2, '0') }}</div>
+      <div class="best-time" v-if="bestTime > 0">Best Record: {{ Math.floor(bestTime / 60) }}:{{ (bestTime % 60).toString().padStart(2, '0') }}</div>
     </div>
     
     <!-- 游戏控制按钮 -->
@@ -319,6 +378,23 @@ onUnmounted(() => {
           <button class="control-btn" @click="resetGame(false)">No, one more round</button>
         </div>
       </div>
+      <div class="share-section">
+        <h3>Share your achievement!</h3>
+        <div class="share-buttons">
+          <!-- <button class="share-btn wechat" @click="shareToWechat">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M8.2 13.3c-.5 0-.9-.4-.9-.8s.4-.8.9-.8.9.4.9.8-.4.8-.9.8m4.2-2.4c.5 0 .9.4.9.8s-.4.8-.9.8-.9-.4-.9-.8.4-.8.9-.8m3.7 2.4c-.5 0-.9-.4-.9-.8s.4-.8.9-.8.9.4.9.8-.4.8-.9.8m3.7-2.4c.5 0 .9.4.9.8s-.4.8-.9.8-.9-.4-.9-.8.4-.8.9-.8M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2"/></svg>
+            WeChat
+          </button> -->
+          <button class="share-btn facebook" @click="shareToFacebook">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.1c0-6.6-5.4-12-12-12s-12 5.4-12 12c0 6 4.4 11 10.1 11.9v-8.4h-3v-3.5h3v-2.6c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.8v2.2h3.4l-.5 3.5h-2.8v8.4c5.7-.9 10.1-5.9 10.1-11.9"/></svg>
+            Facebook
+          </button>
+          <button class="share-btn x" @click="shareToTwitter">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            X
+          </button>
+        </div>
+      </div>
     </div>
     
     <!-- 游戏提示信息 -->
@@ -343,6 +419,121 @@ onUnmounted(() => {
   top: 0;
   left: 0;
   touch-action: none;
+}
+
+.share-section {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.share-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.share-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 20px;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.share-btn:hover {
+  transform: scale(1.05);
+}
+
+.share-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.wechat {
+  background-color: #07C160;
+}
+
+.facebook {
+  background-color: #1877F2;
+}
+
+.x {
+  background-color: #000000;
+}
+
+.game-over {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.95);
+  padding: 20px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  max-width: 90vw;
+  width: 400px;
+}
+
+.share-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.share-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.share-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  color: white;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.share-btn:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+.share-btn.wechat {
+  background-color: #07C160;
+}
+
+.share-btn.facebook {
+  background-color: #1877F2;
+}
+
+.share-btn.x {
+  background-color: #000000;
+}
+
+.share-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
 }
 
 .score, .best-time {
@@ -372,7 +563,7 @@ onUnmounted(() => {
   height: clamp(150px, 43.75vw, 225px);
   transform: translateX(-50%);
   background: url('@/assets/1.png') no-repeat center;
-  background-size: 150%;
+  background-size: 160%;
   transition: background-image 0.3s;
 }
 .snowman--damaged {
@@ -386,19 +577,20 @@ onUnmounted(() => {
 
 .snowball {
   position: absolute;
-  width: clamp(20px, 5vw, 30px);
-  height: clamp(20px, 5vw, 30px);
+  width: clamp(24px, 6vw, 36px);
+  height: clamp(24px, 6vw, 36px);
   background: white;
   border-radius: 50%;
   transform: translateX(-50%);
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  box-shadow: 0 0 15px rgba(255,255,255,0.2);
+  animation: pulse 1s infinite;
 }
 
 .launcher {
   position: absolute;
   bottom: clamp(20px, 5vh, 40px);
-  width: clamp(80px, 20vw, 120px);
-  height: clamp(40px, 10vw, 60px);
+  width: clamp(100px, 25vw, 150px);
+  height: clamp(50px, 12.5vw, 75px); 
   background: url('@/assets/cannon.svg') no-repeat center;
   background-size: contain;
   transform: translateX(-50%) rotate(60deg);
@@ -487,6 +679,28 @@ onUnmounted(() => {
 .control-btn:hover {
   background: #1976d2;
   transform: translateY(-2px);
+}
+
+.particle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.8;
+  animation: fadeOut 0.8s forwards;
+}
+
+@keyframes pulse {
+  0% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.1); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+
+@keyframes fadeOut {
+  0% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
 }
 
 @keyframes fadeIn {
