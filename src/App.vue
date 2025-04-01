@@ -211,7 +211,8 @@ function updateGame() {
       return false
     }
     
-    return ball.y > 0
+    // 检查雪球是否在游戏区域内
+    return ball.y > 0 && ball.y < 100 && ball.x >= 0 && ball.x <= 100
   })
 
   // 更新粒子
@@ -223,11 +224,7 @@ function updateGame() {
   })
 
   // 检查游戏状态和更新提示信息
-  if (hitCount.value >= 50 && hitCount.value < 120 && currentMessage.value !== 'Nice shot! Your stress is melting away!') {
-    showMessage('Nice shot! Your stress is melting away!')
-  } else if (hitCount.value >= 120 && hitCount.value < 200 && currentMessage.value !== 'Keep going, you\'re letting go!') {
-    showMessage('Keep going, you\'re letting go!')
-  } else if (hitCount.value >= 200) {
+   if (hitCount.value >= 200) {
     gameOver.value = true
     // 检查是否为最佳时间
     if (bestTime.value === 0 || gameTime.value < bestTime.value) {
@@ -291,6 +288,7 @@ onUnmounted(() => {
 <template>
   <div class="game-container">
     <div class="header">
+      <div>{{hitCount}}</div>
       <div class="score" v-if="gameStarted">Time: {{ Math.floor(gameTime / 60) }}:{{ (gameTime % 60).toString().padStart(2, '0') }}</div>
       <div class="best-time" v-if="bestTime > 0">Best Record: {{ Math.floor(bestTime / 60) }}:{{ (bestTime % 60).toString().padStart(2, '0') }}</div>
     </div>
@@ -308,8 +306,8 @@ onUnmounted(() => {
       <div 
         class="snowman" 
             :class="{
-          'snowman--damaged': hitCount >= 100,
-          'snowman--broken': hitCount >= 250
+          'snowman--damaged': hitCount >= 50,
+          'snowman--broken': hitCount >= 120
         }"
         :style="{
           left: `${snowmanPosition}%`
