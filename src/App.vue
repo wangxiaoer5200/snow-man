@@ -552,14 +552,22 @@ onUnmounted(() => {
   -webkit-user-select: none;
 }
 
+.snowman--damaged {
+  background-image: url('@/assets/2.png');
+}
+
+.snowman--broken {
+  background-image: url('@/assets/3.png');
+}
+
 .snowball {
   position: absolute;
-  width: clamp(24px, 6vw, 36px);
-  height: clamp(24px, 6vw, 36px);
+  width: clamp(30px, 8vw, 45px);
+  height: clamp(30px, 8vw, 45px);
   background: white;
   border-radius: 50%;
   transform: translateX(-50%);
-  box-shadow: 0 0 15px rgba(255,255,255,0.2);
+  box-shadow: 0 0 20px rgba(255,255,255,0.3);
   animation: pulse 1s infinite;
   user-select: none;
   -webkit-user-select: none;
