@@ -288,7 +288,6 @@ onUnmounted(() => {
 <template>
   <div class="game-container">
     <div class="header">
-      <div>{{hitCount}}</div>
       <div class="score" v-if="gameStarted">Time: {{ Math.floor(gameTime / 60) }}:{{ (gameTime % 60).toString().padStart(2, '0') }}</div>
       <div class="best-time" v-if="bestTime > 0">Best Record: {{ Math.floor(bestTime / 60) }}:{{ (bestTime % 60).toString().padStart(2, '0') }}</div>
     </div>
