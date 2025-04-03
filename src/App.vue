@@ -224,7 +224,7 @@ function updateGame() {
   })
 
   // 检查游戏状态和更新提示信息
-   if (hitCount.value >= 200) {
+   if (hitCount.value >= 80) {
     gameOver.value = true
     // 检查是否为最佳时间
     if (bestTime.value === 0 || gameTime.value < bestTime.value) {
@@ -305,8 +305,8 @@ onUnmounted(() => {
       <div 
         class="snowman" 
             :class="{
-          'snowman--damaged': hitCount >= 50,
-          'snowman--broken': hitCount >= 120
+          'snowman--damaged': hitCount >= 20,
+          'snowman--broken': hitCount >= 50
         }"
         :style="{
           left: `${snowmanPosition}%`
@@ -394,6 +394,8 @@ onUnmounted(() => {
   top: 0;
   left: 0;
   touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .share-section {
@@ -572,7 +574,7 @@ onUnmounted(() => {
 
 .launcher {
   position: absolute;
-  bottom: clamp(40px, 10vh, 60px);
+  bottom: clamp(60px, 14vh, 80px);
   width: clamp(120px, 30vw, 180px);
   height: clamp(60px, 15vw, 90px); 
   background: url('@/assets/cannon.svg') no-repeat center;
